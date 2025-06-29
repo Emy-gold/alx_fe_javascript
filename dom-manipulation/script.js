@@ -70,6 +70,19 @@ function addQuote() {
         quoteInput.value = "";
         categoryInput.value = "";
         alert("Quote added!");
+
+        // POST new quote to mock server (simulated)
+        fetch("https://jsonplaceholder.typicode.com/posts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ title: text, body: category })
+        })
+            .then(response => response.json())
+            .then(data => console.log("Quote sent to server:", data))
+            .catch(error => console.error("Failed to sync with server:", error));
+
     } else {
         alert("Please enter both quote text and category.");
     }
