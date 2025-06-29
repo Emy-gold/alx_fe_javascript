@@ -180,7 +180,7 @@ function resolveConflicts(serverQuotes) {
 
 function showSyncMessage() {
     const msg = document.createElement('div');
-    msg.textContent = 'Quotes synced from server';
+    msg.textContent = 'Quotes synced with server!';
     document.body.prepend(msg);
     setTimeout(() => msg.remove(), 3000);
 }
