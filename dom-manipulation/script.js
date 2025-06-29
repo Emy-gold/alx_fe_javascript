@@ -143,26 +143,37 @@ function exportQoutesToJson() {
 }
 
 // Fetch quotes from server
-async function fetchServerQuotes() {
-    const res = await fetch('https://dummyjson.com/quotes');
-    const data = await res.json();
-    return data.quotes.map(q => ({ text: q.quote, category: q.author }));
+// ✅ Simulate fetching quotes from server (mock)
+function fetchQuotesFromServer() {
+    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+        .then(response => response.json())
+        .then(data => {
+            const serverQuotes = data.map(post => ({
+                text: post.title,
+                category: "Server"
+            }));
+
+            // Avoid duplicates by comparing text
+            const newQuotes = serverQuotes.filter(serverQuote =>
+                !quotes.some(localQuote => localQuote.text === serverQuote.text)
+            );
+
+            if (newQuotes.length > 0) {
+                quotes.push(...newQuotes);
+                localStorage.setItem("quotes", JSON.stringify(quotes));
+                alert("New quotes fetched from server!");
+                populateCategories(); // Refresh dropdown if needed
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching quotes from server:", error);
+        });
 }
 
-// (Optional) Simulate sending local changes
-async function postLocalQuotes() {
-    await fetch('https://dummyjson.com/quotes/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quotes })
-    });
-}
 
 // Fetch and display quotes from the server
-setInterval(async () => {
-    const serverQuotes = await fetchServerQuotes();
-    resolveConflicts(serverQuotes);
-}, 30000);
+fetchQuotesFromServer();
+setInterval(fetchQuotesFromServer, 30000);
 
 // Resolve conflicts between local and server quotes
 function resolveConflicts(serverQuotes) {
