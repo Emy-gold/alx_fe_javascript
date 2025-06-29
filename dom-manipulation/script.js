@@ -1,4 +1,3 @@
-// DOM Elements
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuote = document.getElementById("newQuote");
 let quoteInput, categoryInput, addQuoteBtn;
@@ -59,7 +58,7 @@ function showRandomQuote() {
     sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
-function addQuote() {
+async function addQuote() {
     const text = quoteInput.value.trim();
     const category = categoryInput.value.trim();
 
@@ -71,17 +70,19 @@ function addQuote() {
         categoryInput.value = "";
         alert("Quote added!");
 
-        // POST new quote to mock server (simulated)
-        fetch("https://jsonplaceholder.typicode.com/posts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ title: text, body: category })
-        })
-            .then(response => response.json())
-            .then(data => console.log("Quote sent to server:", data))
-            .catch(error => console.error("Failed to sync with server:", error));
+        try {
+            const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ title: text, body: category })
+            });
+            const data = await response.json();
+            console.log("Quote sent to server:", data);
+        } catch (error) {
+            console.error("Failed to sync with server:", error);
+        }
 
     } else {
         alert("Please enter both quote text and category.");
@@ -154,20 +155,21 @@ function importFromJsonFile(event) {
     reader.readAsText(file);
 }
 
-function fetchQuotesFromServer() {
-    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-        .then(response => response.json())
-        .then(data => {
-            const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
-            const newQuotes = serverQuotes.filter(serverQuote => !quotes.some(localQuote => localQuote.text === serverQuote.text));
-            if (newQuotes.length > 0) {
-                quotes.push(...newQuotes);
-                saveQuotes();
-                populateCategories();
-                alert("New quotes fetched from server!");
-            }
-        })
-        .catch(error => console.error("Error fetching quotes from server:", error));
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
+        const data = await response.json();
+        const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
+        const newQuotes = serverQuotes.filter(serverQuote => !quotes.some(localQuote => localQuote.text === serverQuote.text));
+        if (newQuotes.length > 0) {
+            quotes.push(...newQuotes);
+            saveQuotes();
+            populateCategories();
+            alert("New quotes fetched from server!");
+        }
+    } catch (error) {
+        console.error("Error fetching quotes from server:", error);
+    }
 }
 
 function resolveConflicts(serverQuotes) {
@@ -183,15 +185,16 @@ function showSyncMessage() {
     setTimeout(() => msg.remove(), 3000);
 }
 
-function syncQuotes() {
-    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-        .then(response => response.json())
-        .then(data => {
-            const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
-            resolveConflicts(serverQuotes);
-            showSyncMessage();
-        })
-        .catch(error => console.error("Sync error:", error));
+async function syncQuotes() {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
+        const data = await response.json();
+        const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
+        resolveConflicts(serverQuotes);
+        showSyncMessage();
+    } catch (error) {
+        console.error("Sync error:", error);
+    }
 }
 
 document.getElementById("manualSync").addEventListener("click", syncQuotes);
