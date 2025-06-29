@@ -72,7 +72,8 @@ function addQuote() {
 
     if (text && category) {
         quotes.push({ text, category });
-        saveQuotes(); // Save to localStorage
+        localStorage.setItem("quotes", JSON.stringify(quotes));
+        populateCategories(); // Refresh dropdown
         quoteInput.value = "";
         categoryInput.value = "";
         alert("Quote added!");
@@ -81,6 +82,40 @@ function addQuote() {
     }
 }
 
+
+function filterQuotes() {
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    localStorage.setItem("selectedCategory", selectedCategory);
+
+    const filteredQuotes = selectedCategory === "all" ? quotes : quotes.filter(q => q.category === selectedCategory);
+
+    if (filteredQuotes.length > 0) {
+        const quote = filteredQuotes[Math.floor(Math.random() * filteredQuotes.length)];
+        quoteDisplay.innerHTML = `<p>${quote.text}</p><small>(${quote.category})</small>`;
+    } else {
+        quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
+    }
+}
+function populateCategories() {
+    const categorySet = new Set();
+    quotes.forEach(q => categorySet.add(q.category));
+
+    const filterDropdown = document.getElementById("categoryFilter");
+
+    filterDropdown.innerHTML = '<option value="all">All Categories</option>';
+    categorySet.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        filterDropdown.appendChild(option);
+    });
+
+    const savedFilter = localStorage.getItem("selectedCategory");
+    if (savedFilter) {
+        filterDropdown.value = savedFilter;
+        filterQuotes();
+    }
+}
 // Export quotes to JSON file
 function exportQoutesToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
@@ -118,9 +153,11 @@ function importFromJsonFile(event) {
     reader.readAsText(file);
 }
 
+
 // Run on page load
 loadQuotes();
 createAddQuoteForm();
+populateCategories();
 newQuote.addEventListener("click", showRandomQuote);
 document.getElementById("exportBtn").addEventListener("click", exportQoutesToJson);
 document.getElementById("importFile").addEventListener("change", importFromJsonFile);
