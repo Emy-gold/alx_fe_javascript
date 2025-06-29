@@ -53,7 +53,7 @@ function loadQuotes() {
     if (savedQuotes) {
         quotes = JSON.parse(savedQuotes);
     } else {
-        let quotes = [
+        quotes = [
             { text: "Believe in yourself!", category: "Motivation" },
             { text: "Why dont scientists trust atoms? Because they make up everything!", category: "Humor" },
             { text: "Every day is a second chance.", category: "Inspiration" },
@@ -68,6 +68,7 @@ function showRandomQuote() {
 }
 
 function addQuote() {
+    localStorage.setItem("quotes", JSON.stringify(quotes));
     const text = quoteInput.value.trim();
     const category = categoryInput.value.trim();
 
