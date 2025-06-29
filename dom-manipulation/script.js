@@ -183,13 +183,18 @@ function showSyncMessage() {
     setTimeout(() => msg.remove(), 3000);
 }
 
-document.getElementById("manualSync").addEventListener("click", async () => {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
-    const data = await response.json();
-    const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
-    resolveConflicts(serverQuotes);
-    showSyncMessage();
-});
+function syncQuotes() {
+    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+        .then(response => response.json())
+        .then(data => {
+            const serverQuotes = data.map(post => ({ text: post.title, category: "Server" }));
+            resolveConflicts(serverQuotes);
+            showSyncMessage();
+        })
+        .catch(error => console.error("Sync error:", error));
+}
+
+document.getElementById("manualSync").addEventListener("click", syncQuotes);
 
 // Initialization
 loadQuotes();
