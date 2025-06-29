@@ -142,6 +142,49 @@ function exportQoutesToJson() {
     URL.revokeObjectURL(url);
 }
 
+// Fetch quotes from server
+async function fetchServerQuotes() {
+    const res = await fetch('https://dummyjson.com/quotes');
+    const data = await res.json();
+    return data.quotes.map(q => ({ text: q.quote, category: q.author }));
+}
+
+// (Optional) Simulate sending local changes
+async function postLocalQuotes() {
+    await fetch('https://dummyjson.com/quotes/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quotes })
+    });
+}
+
+// Fetch and display quotes from the server
+setInterval(async () => {
+    const serverQuotes = await fetchServerQuotes();
+    resolveConflicts(serverQuotes);
+}, 30000);
+
+// Resolve conflicts between local and server quotes
+function resolveConflicts(serverQuotes) {
+    // Basic merge: use server data only
+    quotes = [...serverQuotes];
+    saveQuotes();
+    alert('Quotes synced from server.');
+}
+
+function showSyncMessage() {
+    const msg = document.createElement('div');
+    msg.textContent = 'Quotes synced from server';
+    document.body.prepend(msg);
+    setTimeout(() => msg.remove(), 3000);
+}
+
+document.getElementById('manualSync')
+    .addEventListener('click', async () => {
+        const sq = await fetchServerQuotes();
+        resolveConflicts(sq);
+    });
+
 // Import quotes from a JSON file
 function importFromJsonFile(event) {
     const file = event.target.files[0];
