@@ -96,26 +96,38 @@ function filterQuotes() {
         quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
     }
 }
-function populateCategories() {
-    const categorySet = new Set();
-    quotes.forEach(q => categorySet.add(q.category));
 
+function populateCategories() {
     const filterDropdown = document.getElementById("categoryFilter");
 
-    filterDropdown.innerHTML = '<option value="all">All Categories</option>';
-    categorySet.forEach(category => {
+    // Use map to extract all categories, then use Set to make them unique
+    const categories = [...new Set(quotes.map(q => q.category))];
+
+    // Clear and reset dropdown
+    filterDropdown.innerHTML = `<option value="all">All Categories</option>`;
+
+    categories.forEach(category => {
         const option = document.createElement("option");
         option.value = category;
         option.textContent = category;
         filterDropdown.appendChild(option);
     });
 
+    // Restore previously selected category from localStorage
     const savedFilter = localStorage.getItem("selectedCategory");
     if (savedFilter) {
         filterDropdown.value = savedFilter;
         filterQuotes();
     }
 }
+
+
+const savedFilter = localStorage.getItem("selectedCategory");
+if (savedFilter) {
+    filterDropdown.value = savedFilter;
+    filterQuotes();
+}
+
 // Export quotes to JSON file
 function exportQoutesToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
